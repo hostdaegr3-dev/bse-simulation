@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Classroom Stock Simulation</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #0b1220;
+      color: white;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      height: 100vh;
+    }
+
+    .teacher {
+      background: #111827;
+      padding: 15px;
+    }
+
+    .screen {
+      background: #1e293b;
+      padding: 10px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border: none;
+      border-radius: 6px;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .start { background: #16a34a; color: white; }
+    .stop { background: #dc2626; color: white; }
+
+    canvas {
+      background: white;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .news {
+      margin-top: 10px;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="grid">
+
+  <!-- TEACHER CONTROL PANEL -->
+  <div class="teacher">
+    <h2>👨‍🏫 Teacher Control</h2>
+
+    <input id="newsText" placeholder="Enter news (e.g. Market crash / Boom)">
+
+    <select id="impact">
+      <option value="0">Neutral</option>
+      <option value="2">Positive</option>
+      <option value="-2">Negative</option>
+      <option value="-4">Strong Negative</option>
+      <option value="4">Strong Positive</option>
+    </select>
+
+    <button onclick="applyNews()">📢 Apply News</button>
+
+    <button class="start" onclick="start()">▶ Start</button>
+    <button class="stop" onclick="stop()">⏸ Stop</button>
+
+    <div class="news" id="newsBox">No news yet</div>
+  </div>
+
+  <!-- STUDENT SCREEN -->
+  <div class="screen">
+    <canvas id="chart"></canvas>
+  </div>
+
+</div>
+
+<script>
+let price = 100;
+let labels = [];
+let running;
+let newsImpact = 0;
+
+const ctx = document.getElementById("chart").getContext("2d");
+
+let chart = new Chart(ctx, {
+  type: "line",
+  data: {
+    labels: labels,
+    datasets: [{
+      label: "Market Price",
+      data: [],
+      borderColor: "cyan",
+      fill: false,
+      tension: 0.4
+    }]
+  },
+  options: {
+    animation: {
+      duration: 500
+    }
+  }
+});
+
+function updateMarket() {
+  labels.push(labels.length);
+
+  let random = (Math.random() * 2 - 1);
+
+  // controlled by teacher news
+  price = price + random + newsImpact;
+
+  chart.data.labels = labels;
+  chart.data.datasets[0].data.push(price);
+
+  chart.update();
+}
+
+function start() {
+  if (!running) {
+    running = setInterval(updateMarket, 1000);
+  }
+}
+
+function stop() {
+  clearInterval(running);
+  running = null;
+}
+
+function applyNews() {
+  let text = document.getElementById("newsText").value;
+  newsImpact = parseFloat(document.getElementById("impact").value);
+
+  document.getElementById("newsBox").innerText = "📰 " + text;
+}
+</script>
+
+</body>
+</html>
