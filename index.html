@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>15 Stock Mini Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #0b1220;
+      color: white;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .box {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 5px;
+      height: 160px;
+    }
+
+    canvas {
+      background: white;
+      border-radius: 8px;
+    }
+
+    .title {
+      font-size: 12px;
+      text-align: center;
+      margin-bottom: 2px;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="grid" id="grid"></div>
+
+<script>
+let stocks = {};
+
+// 🔥 create 15 stocks
+for (let i = 1; i <= 15; i++) {
+  stocks["STOCK" + i] = [100 + Math.random() * 100];
+}
+
+let maxPoints = 30;
+let charts = {};
+let labels = [];
+
+// 📊 create mini chart
+function createMiniChart(id, label) {
+  return new Chart(document.getElementById(id), {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [{
+        label: label,
+        data: [],
+        borderColor: "cyan",
+        fill: false,
+        tension: 0.35,
+        pointRadius: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { display: false },
+        y: { display: false }
+      }
+    }
+  });
+}
+
+// 🔥 build UI
+let grid = document.getElementById("grid");
+
+Object.keys(stocks).forEach((s, i) => {
+  let div = document.createElement("div");
+  div.className = "box";
+
+  div.innerHTML = `
+    <div class="title">${s}</div>
+    <canvas id="c${i}"></canvas>
+  `;
+
+  grid.appendChild(div);
+
+  charts[s] = createMiniChart("c" + i, s);
+});
+
+// 🚀 smooth update engine (NO LAG)
+function update() {
+  labels.push("");
+
+  Object.keys(stocks).forEach(s => {
+    let last = stocks[s][stocks[s].length - 1];
+    let change = (Math.random() * 2 - 1);
+    let next = last + change;
+
+    stocks[s].push(next);
+
+    if (stocks[s].length > maxPoints) stocks[s].shift();
+
+    let chart = charts[s];
+
+    chart.data.labels.push("");
+    chart.data.datasets[0].data.push(next);
+
+    if (chart.data.datasets[0].data.length > maxPoints) {
+      chart.data.datasets[0].data.shift();
+      chart.data.labels.shift();
+    }
+
+    chart.update("none"); // 🔥 ultra smooth
+  });
+}
+
+setInterval(update, 600);
+</script>
+
+</body>
+</html>
